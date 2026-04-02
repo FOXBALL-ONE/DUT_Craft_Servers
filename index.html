@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Minecraft 服务器状态</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body>
+    <div class="background-glow" aria-hidden="true"></div>
+    <main class="layout">
+      <header class="hero">
+        <p class="hero-kicker">Server Dashboard</p>
+        <h1>Minecraft 服务器状态</h1>
+        <p class="hero-subtitle">实时查询预设服务器在线状态、人数、MOTD 与版本信息</p>
+        <button id="refresh-all" class="refresh-button" type="button" aria-label="刷新所有服务器状态">
+          刷新全部服务器
+        </button>
+      </header>
+
+      <section>
+        <div id="status-board" class="server-grid" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
