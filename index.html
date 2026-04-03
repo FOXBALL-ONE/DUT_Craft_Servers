@@ -16,8 +16,7 @@
     <div class="background-glow" aria-hidden="true"></div>
     <main class="layout">
       <header class="hero">
-        <p class="hero-kicker">Server Dashboard</p>
-        <h1>Minecraft 服务器状态</h1>
+        <h1>DUT_Craft 服务器状态查询</h1>
         <p class="hero-subtitle">实时查询预设服务器在线状态、人数、MOTD 与版本信息</p>
         <button id="refresh-all" class="refresh-button" type="button" aria-label="刷新所有服务器状态">
           刷新全部服务器
@@ -27,6 +26,13 @@
       <section>
         <div id="status-board" class="server-grid" aria-live="polite"></div>
       </section>
+
+      <footer class="site-footer">
+        <span>API: </span>
+        <a class="api-link" href="https://api.mcsrvstat.us/2" target="_blank" rel="noreferrer noopener">
+          https://api.mcsrvstat.us/2
+        </a>
+      </footer>
     </main>
 
     <script type="module" src="/src/main.ts"></script>

@@ -1,0 +1,15 @@
+[
+  {
+    "name": "DUT_Craft大厅",
+    "host": "lobby.unsafe.top"
+  },
+  {
+    "name": "DUT_Craft建筑服",
+    "host": "building.unsafe.top"
+  },
+  {
+    "name": "示例离线服",
+    "host": "herobrine.net",
+    "port": 25565
+  }
+]

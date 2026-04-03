@@ -38,7 +38,7 @@ body {
 .layout {
   position: relative;
   z-index: 1;
-  width: min(1120px, 92%);
+  width: min(1480px, 94%);
   margin: 0 auto;
   padding: 3.2rem 0 4rem;
 }
@@ -95,8 +95,26 @@ body {
 
 .server-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(520px, 1fr));
+  gap: 1.15rem;
+}
+
+.site-footer {
+  margin-top: 2rem;
+  padding-top: 0.95rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.api-link {
+  color: #bce9ff;
+  font-family: "Space Mono", monospace;
+  text-decoration: none;
+}
+
+.api-link:hover {
+  text-decoration: underline;
 }
 
 .server-card {
