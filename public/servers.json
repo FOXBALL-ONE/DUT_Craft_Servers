@@ -66,7 +66,7 @@
     "name": "DUT_Craft 幸运方块",
     "address": [
       {
-        "host": "lucky.unsafe.top",
+        "host": "mod.unsafe.top",
         "port": 25565
       }
     ]
