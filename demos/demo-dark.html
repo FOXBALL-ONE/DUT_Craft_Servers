@@ -1,0 +1,1027 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DUT_Craft · 月夜星咏 (Dark Demo)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Noto+Serif+SC:wght@500;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* ===== 月夜星咏 · 调色板 ===== */
+      :root {
+        --night-1: #070a1c;
+        --night-2: #0b0f29;
+        --night-3: #121638;
+        --night-4: #1a1f48;
+
+        --moon: #f4efdc;
+        --moon-soft: #d9d4c0;
+        --star: #f3e3ad;
+        --star-bright: #ffe9a8;
+        --violet: #a99ce0;
+        --silver: #cdd5e8;
+
+        --text: #eef1fa;
+        --text-soft: #a6b0d0;
+        --text-faint: #6d7898;
+
+        --glass: rgba(255, 255, 255, 0.045);
+        --glass-hi: rgba(255, 255, 255, 0.09);
+        --glass-edge: rgba(255, 255, 255, 0.14);
+        --glass-edge-top: rgba(255, 255, 255, 0.28);
+
+        --online: #f3e3ad;
+        --offline: #8893b5;
+        --error: #e88a8a;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        min-height: 100vh;
+        color: var(--text);
+        font-family: "Noto Sans SC", sans-serif;
+        font-weight: 300;
+        background:
+          radial-gradient(ellipse 80% 60% at 82% 8%, rgba(244, 239, 220, 0.16) 0%, transparent 45%),
+          radial-gradient(ellipse 70% 50% at 12% 90%, rgba(169, 156, 224, 0.12) 0%, transparent 50%),
+          linear-gradient(165deg, var(--night-1) 0%, var(--night-2) 35%, var(--night-3) 70%, var(--night-4) 100%);
+        background-attachment: fixed;
+        overflow-x: hidden;
+        position: relative;
+        letter-spacing: 0.01em;
+      }
+
+      /* ===== 星空（多层星点）===== */
+      .starfield {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+        overflow: hidden;
+      }
+
+      .stars,
+      .stars-mid,
+      .stars-far {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 2px;
+        height: 2px;
+        border-radius: 50%;
+        background: transparent;
+      }
+
+      .stars {
+        box-shadow:
+          120px 80px var(--star-bright), 300px 200px #fff, 480px 60px var(--star),
+          640px 320px #fff, 800px 140px var(--star-bright), 980px 280px var(--star),
+          1160px 90px #fff, 1320px 360px var(--star), 150px 420px var(--star-bright),
+          380px 520px #fff, 560px 460px var(--star), 720px 580px #fff, 900px 500px var(--star),
+          1080px 620px var(--star-bright), 1260px 480px #fff, 1440px 560px var(--star),
+          220px 680px #fff, 460px 740px var(--star), 680px 700px var(--star-bright),
+          880px 800px #fff, 1140px 760px var(--star), 1380px 820px #fff, 60px 300px var(--star);
+        animation: twinkle 4s ease-in-out infinite;
+      }
+
+      .stars-mid {
+        width: 1.5px;
+        height: 1.5px;
+        box-shadow:
+          200px 150px var(--silver), 420px 280px #fff, 600px 100px var(--violet),
+          780px 240px #fff, 960px 180px var(--silver), 1140px 300px #fff,
+          1300px 120px var(--violet), 280px 400px #fff, 500px 480px var(--silver),
+          700px 560px #fff, 880px 420px var(--violet), 1060px 540px #fff,
+          1240px 600px var(--silver), 1420px 380px #fff, 100px 600px var(--violet);
+        animation: twinkle 6s ease-in-out infinite 1s;
+        opacity: 0.7;
+      }
+
+      .stars-far {
+        width: 1px;
+        height: 1px;
+        box-shadow:
+          80px 40px #fff, 240px 120px var(--silver), 400px 200px #fff, 560px 80px #fff,
+          720px 260px var(--silver), 880px 60px #fff, 1040px 220px #fff, 1200px 100px var(--silver),
+          1360px 240px #fff, 160px 360px #fff, 320px 440px var(--silver), 480px 520px #fff,
+          640px 380px #fff, 800px 500px var(--silver), 960px 420px #fff, 1120px 540px #fff,
+          1280px 460px var(--silver), 60px 540px #fff, 200px 660px #fff, 380px 700px var(--silver);
+        opacity: 0.45;
+        animation: twinkle 8s ease-in-out infinite 0.5s;
+      }
+
+      @keyframes twinkle {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.35;
+        }
+      }
+
+      /* ===== 月亮 ===== */
+      .moon {
+        position: fixed;
+        top: 6%;
+        right: 7%;
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 38% 35%, var(--moon) 0%, var(--moon-soft) 55%, rgba(217, 212, 192, 0.4) 80%, transparent 100%);
+        box-shadow:
+          0 0 60px 10px rgba(244, 239, 220, 0.25),
+          0 0 140px 30px rgba(244, 239, 220, 0.12),
+          0 0 240px 60px rgba(169, 156, 224, 0.08);
+        z-index: 0;
+        pointer-events: none;
+        animation: moonglow 7s ease-in-out infinite;
+      }
+
+      @keyframes moonglow {
+        0%,
+        100% {
+          box-shadow:
+            0 0 60px 10px rgba(244, 239, 220, 0.25),
+            0 0 140px 30px rgba(244, 239, 220, 0.12),
+            0 0 240px 60px rgba(169, 156, 224, 0.08);
+        }
+        50% {
+          box-shadow:
+            0 0 70px 14px rgba(244, 239, 220, 0.32),
+            0 0 160px 38px rgba(244, 239, 220, 0.16),
+            0 0 280px 70px rgba(169, 156, 224, 0.1);
+        }
+      }
+
+      /* 星轨细线装饰 */
+      .orbit {
+        position: fixed;
+        top: 8%;
+        right: 4%;
+        width: 260px;
+        height: 260px;
+        border: 1px solid rgba(243, 227, 173, 0.12);
+        border-radius: 50%;
+        z-index: 0;
+        pointer-events: none;
+        transform: rotate(28deg);
+      }
+
+      .orbit::after {
+        content: "";
+        position: absolute;
+        top: 8%;
+        right: 14%;
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--star-bright);
+        box-shadow: 0 0 10px 2px rgba(255, 233, 168, 0.7);
+      }
+
+      /* ===== 布局 ===== */
+      .layout {
+        position: relative;
+        z-index: 1;
+        width: min(1280px, 92%);
+        margin: 0 auto;
+        padding: 4rem 0 5rem;
+      }
+
+      /* ===== Hero ===== */
+      .hero {
+        position: relative;
+        margin-bottom: 3rem;
+        animation: rise 700ms cubic-bezier(0.2, 0.9, 0.3, 1) both;
+      }
+
+      .hero-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.7rem;
+        font-family: "Cormorant Garamond", serif;
+        font-style: italic;
+        font-weight: 500;
+        color: var(--star);
+        font-size: 1.15rem;
+        letter-spacing: 0.12em;
+        margin-bottom: 0.6rem;
+      }
+
+      .hero-kicker::before,
+      .hero-kicker::after {
+        content: "";
+        width: 36px;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, var(--star), transparent);
+      }
+
+      .hero h1 {
+        margin: 0;
+        font-family: "Cormorant Garamond", "Noto Serif SC", serif;
+        font-weight: 600;
+        font-size: clamp(2.2rem, 5.5vw, 3.6rem);
+        line-height: 1.08;
+        letter-spacing: 0.005em;
+      }
+
+      .hero h1 .zh {
+        font-family: "Noto Serif SC", serif;
+        font-weight: 700;
+      }
+
+      .hero h1 .accent {
+        background: linear-gradient(120deg, var(--star-bright) 0%, var(--moon) 50%, var(--violet) 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-style: italic;
+      }
+
+      .hero-subtitle {
+        margin: 1rem 0 0;
+        color: var(--text-soft);
+        max-width: 50ch;
+        font-size: 0.98rem;
+        line-height: 1.7;
+        font-weight: 300;
+      }
+
+      .refresh-button {
+        margin-top: 1.6rem;
+        position: relative;
+        border: 1px solid var(--glass-edge);
+        background: linear-gradient(135deg, var(--glass-hi), var(--glass));
+        backdrop-filter: blur(12px);
+        color: var(--text);
+        padding: 0.8rem 1.8rem;
+        border-radius: 999px;
+        font-family: "Noto Serif SC", serif;
+        font-weight: 500;
+        font-size: 0.98rem;
+        letter-spacing: 0.05em;
+        cursor: pointer;
+        box-shadow:
+          inset 0 1px 0 var(--glass-edge-top),
+          0 8px 24px rgba(0, 0, 0, 0.35);
+        transition: all 220ms ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+      }
+
+      .refresh-button::before {
+        content: "✦";
+        color: var(--star-bright);
+        font-size: 0.85rem;
+      }
+
+      .refresh-button:hover {
+        background: linear-gradient(135deg, rgba(243, 227, 173, 0.18), var(--glass));
+        border-color: rgba(243, 227, 173, 0.4);
+        box-shadow:
+          inset 0 1px 0 var(--glass-edge-top),
+          0 10px 30px rgba(243, 227, 173, 0.18);
+        transform: translateY(-1px);
+      }
+
+      .refresh-button:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      /* ===== 卡片网格 ===== */
+      .server-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(min(420px, 100%), 1fr));
+        gap: 1.5rem;
+      }
+
+      /* ===== 玻璃卡片 ===== */
+      .server-card {
+        position: relative;
+        background: linear-gradient(140deg, var(--glass-hi) 0%, var(--glass) 60%, rgba(169, 156, 224, 0.03) 100%);
+        backdrop-filter: blur(16px);
+        border: 1px solid var(--glass-edge);
+        border-radius: 18px;
+        padding: 1.4rem 1.5rem 1.3rem;
+        box-shadow:
+          inset 0 1px 0 var(--glass-edge-top),
+          inset 0 0 30px rgba(255, 255, 255, 0.015),
+          0 20px 40px -12px rgba(0, 0, 0, 0.5);
+        transition: all 280ms cubic-bezier(0.2, 0.9, 0.3, 1);
+        animation: rise 600ms cubic-bezier(0.2, 0.9, 0.3, 1) both;
+        overflow: hidden;
+      }
+
+      /* 顶部光泽线 */
+      .server-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 15%;
+        right: 15%;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+      }
+
+      .server-card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(243, 227, 173, 0.28);
+        box-shadow:
+          inset 0 1px 0 var(--glass-edge-top),
+          inset 0 0 40px rgba(243, 227, 173, 0.04),
+          0 28px 50px -12px rgba(0, 0, 0, 0.55),
+          0 0 30px rgba(243, 227, 173, 0.08);
+      }
+
+      .server-card.online {
+        border-color: rgba(243, 227, 173, 0.32);
+        box-shadow:
+          inset 0 1px 0 var(--glass-edge-top),
+          0 20px 40px -12px rgba(0, 0, 0, 0.5),
+          0 0 24px rgba(243, 227, 173, 0.1);
+      }
+
+      .server-card.offline {
+        opacity: 0.92;
+      }
+
+      .server-card.error {
+        border-color: rgba(232, 138, 138, 0.32);
+        box-shadow:
+          inset 0 1px 0 var(--glass-edge-top),
+          0 20px 40px -12px rgba(0, 0, 0, 0.5),
+          0 0 20px rgba(232, 138, 138, 0.12);
+      }
+
+      .card-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.6rem;
+      }
+
+      .title-wrap {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        min-width: 0;
+      }
+
+      .server-icon {
+        width: 2.6rem;
+        height: 2.6rem;
+        border-radius: 0.7rem;
+        border: 1px solid var(--glass-edge);
+        background: linear-gradient(135deg, rgba(243, 227, 173, 0.18), rgba(169, 156, 224, 0.1));
+        object-fit: cover;
+        flex: 0 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.35rem;
+        box-shadow: inset 0 1px 0 var(--glass-edge-top);
+      }
+
+      .card-head h2 {
+        margin: 0;
+        font-family: "Noto Serif SC", serif;
+        font-size: 1.18rem;
+        font-weight: 600;
+        overflow-wrap: anywhere;
+        color: var(--text);
+        letter-spacing: 0.02em;
+      }
+
+      .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        border-radius: 999px;
+        padding: 0.3rem 0.75rem;
+        font-size: 0.74rem;
+        font-weight: 400;
+        font-family: "Cormorant Garamond", serif;
+        font-style: italic;
+        letter-spacing: 0.08em;
+        border: 1px solid transparent;
+        white-space: nowrap;
+        flex: 0 0 auto;
+        background: rgba(255, 255, 255, 0.03);
+      }
+
+      .status-pill .dot {
+        width: 0.5rem;
+        height: 0.5rem;
+        border-radius: 50%;
+      }
+
+      .status-pill.online {
+        color: var(--star-bright);
+        border-color: rgba(243, 227, 173, 0.4);
+      }
+
+      .status-pill.online .dot {
+        background: var(--star-bright);
+        box-shadow: 0 0 8px var(--star-bright);
+        animation: pulse 2.4s ease-in-out infinite;
+      }
+
+      .status-pill.offline {
+        color: var(--text-soft);
+        border-color: rgba(136, 147, 181, 0.3);
+      }
+
+      .status-pill.offline .dot {
+        background: var(--offline);
+      }
+
+      .status-pill.error {
+        color: var(--error);
+        border-color: rgba(232, 138, 138, 0.4);
+      }
+
+      .status-pill.error .dot {
+        background: var(--error);
+        box-shadow: 0 0 8px var(--error);
+      }
+
+      .status-pill.loading {
+        color: var(--violet);
+        border-color: rgba(169, 156, 224, 0.4);
+      }
+
+      .status-pill.loading .dot {
+        background: var(--violet);
+        animation: pulse 1.2s ease-in-out infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 0.4;
+          transform: scale(0.85);
+        }
+      }
+
+      .data-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 0.8rem;
+        gap: 0.6rem;
+        font-size: 0.9rem;
+        padding-bottom: 0.6rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .data-row:last-of-type {
+        border-bottom: none;
+      }
+
+      .label {
+        color: var(--text-faint);
+        font-weight: 300;
+        font-size: 0.82rem;
+        letter-spacing: 0.04em;
+      }
+
+      .value {
+        font-family: "JetBrains Mono", monospace;
+        font-weight: 700;
+        color: var(--silver);
+      }
+
+      .players-row {
+        align-items: flex-start;
+      }
+
+      .players-row .label {
+        padding-top: 0.32rem;
+      }
+
+      .players-row .value {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+        justify-content: flex-end;
+        max-width: 72%;
+      }
+
+      .player-chip {
+        display: inline-block;
+        padding: 0.22rem 0.65rem;
+        border: 1px solid rgba(243, 227, 173, 0.28);
+        border-radius: 999px;
+        background: rgba(243, 227, 173, 0.08);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.74rem;
+        font-weight: 700;
+        color: var(--star);
+        letter-spacing: 0.02em;
+      }
+
+      .player-chip.muted {
+        border-color: rgba(255, 255, 255, 0.12);
+        background: rgba(255, 255, 255, 0.03);
+        color: var(--text-faint);
+        font-family: "Noto Sans SC", sans-serif;
+        font-weight: 300;
+      }
+
+      .motd {
+        margin: 0.95rem 0 0;
+        color: var(--text);
+        font-size: 0.9rem;
+        line-height: 1.6;
+        min-height: 2.6em;
+        padding: 0.7rem 0.9rem;
+        background: linear-gradient(135deg, rgba(243, 227, 173, 0.06), rgba(169, 156, 224, 0.04));
+        border-left: 2px solid var(--star);
+        border-radius: 0 8px 8px 0;
+        font-family: "Noto Serif SC", serif;
+        font-weight: 400;
+      }
+
+      .copy-row {
+        margin-top: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.6rem;
+        flex-wrap: wrap;
+      }
+
+      .address-list {
+        display: grid;
+        gap: 0.3rem;
+        justify-items: start;
+        min-width: 0;
+      }
+
+      .address-copy {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.35rem 0.8rem;
+        border: 1px solid var(--glass-edge);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.03);
+        color: var(--silver);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.78rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 200ms ease;
+        overflow-wrap: anywhere;
+      }
+
+      .address-copy:hover {
+        border-color: rgba(243, 227, 173, 0.45);
+        background: rgba(243, 227, 173, 0.1);
+        color: var(--star-bright);
+      }
+
+      .address-copy::before {
+        content: "❖";
+        color: var(--star);
+        font-size: 0.7rem;
+      }
+
+      .refresh-card-btn {
+        flex: 0 0 auto;
+        border: 1px solid var(--glass-edge);
+        color: var(--text-soft);
+        background: rgba(255, 255, 255, 0.03);
+        padding: 0.42rem 1rem;
+        border-radius: 999px;
+        font-family: "Noto Serif SC", serif;
+        font-weight: 400;
+        font-size: 0.82rem;
+        letter-spacing: 0.04em;
+        cursor: pointer;
+        transition: all 200ms ease;
+      }
+
+      .refresh-card-btn:hover {
+        border-color: rgba(243, 227, 173, 0.4);
+        color: var(--star-bright);
+        background: rgba(243, 227, 173, 0.08);
+      }
+
+      .error-text {
+        margin: 0.7rem 0 0;
+        color: var(--error);
+        font-size: 0.8rem;
+        padding: 0.45rem 0.8rem;
+        border-radius: 8px;
+        background: rgba(232, 138, 138, 0.08);
+        border-left: 2px solid var(--error);
+      }
+
+      /* ===== 加载骨架 ===== */
+      .line {
+        height: 11px;
+        border-radius: 6px;
+        margin-top: 0.85rem;
+        background: rgba(255, 255, 255, 0.06);
+      }
+
+      .line.short {
+        width: 62%;
+      }
+
+      .shimmer {
+        background: linear-gradient(90deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04));
+        background-size: 200% 100%;
+        animation: shimmer 1.6s linear infinite;
+      }
+
+      @keyframes shimmer {
+        from {
+          background-position: 100% 0;
+        }
+        to {
+          background-position: -100% 0;
+        }
+      }
+
+      /* ===== 页脚 ===== */
+      .site-footer {
+        position: relative;
+        z-index: 1;
+        margin-top: 3rem;
+        padding: 1.1rem 1.5rem;
+        border-radius: 16px;
+        background: var(--glass);
+        backdrop-filter: blur(12px);
+        border: 1px solid var(--glass-edge);
+        box-shadow: inset 0 1px 0 var(--glass-edge-top);
+        color: var(--text-soft);
+        font-size: 0.85rem;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .api-link {
+        color: var(--star);
+        font-family: "JetBrains Mono", monospace;
+        text-decoration: none;
+        overflow-wrap: anywhere;
+        font-weight: 700;
+        border-bottom: 1px solid rgba(243, 227, 173, 0.3);
+        transition: border-color 200ms ease;
+      }
+
+      .api-link:hover {
+        border-color: var(--star-bright);
+      }
+
+      /* ===== Toast ===== */
+      .toast {
+        position: fixed;
+        right: 1.2rem;
+        bottom: 1.2rem;
+        padding: 0.75rem 1.2rem;
+        border-radius: 12px;
+        border: 1px solid rgba(243, 227, 173, 0.4);
+        background: rgba(11, 15, 41, 0.85);
+        backdrop-filter: blur(16px);
+        color: var(--text);
+        font-family: "Noto Serif SC", serif;
+        font-size: 0.9rem;
+        box-shadow:
+          inset 0 1px 0 var(--glass-edge-top),
+          0 12px 30px rgba(0, 0, 0, 0.5),
+          0 0 20px rgba(243, 227, 173, 0.12);
+        z-index: 20;
+        transition: opacity 280ms ease, transform 280ms ease;
+      }
+
+      .toast-out {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      /* ===== 动画 ===== */
+      @keyframes rise {
+        from {
+          opacity: 0;
+          transform: translateY(16px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .server-card:nth-child(1) {
+        animation-delay: 80ms;
+      }
+      .server-card:nth-child(2) {
+        animation-delay: 160ms;
+      }
+      .server-card:nth-child(3) {
+        animation-delay: 240ms;
+      }
+      .server-card:nth-child(4) {
+        animation-delay: 320ms;
+      }
+      .server-card:nth-child(5) {
+        animation-delay: 400ms;
+      }
+
+      /* ===== 响应式 ===== */
+      @media (max-width: 720px) {
+        .layout {
+          padding: 2.5rem 0 4rem;
+        }
+
+        .moon {
+          width: 80px;
+          height: 80px;
+        }
+
+        .orbit {
+          width: 180px;
+          height: 180px;
+        }
+
+        .server-grid {
+          grid-template-columns: 1fr;
+          gap: 1.1rem;
+        }
+
+        .card-head {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .copy-row {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .players-row .value {
+          max-width: 100%;
+          justify-content: flex-start;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- 星空 -->
+    <div class="starfield" aria-hidden="true">
+      <div class="stars"></div>
+      <div class="stars-mid"></div>
+      <div class="stars-far"></div>
+    </div>
+
+    <!-- 星轨 -->
+    <div class="orbit" aria-hidden="true"></div>
+
+    <!-- 月亮 -->
+    <div class="moon" aria-hidden="true"></div>
+
+    <main class="layout">
+      <header class="hero">
+        <span class="hero-kicker">Lunar Nocturne</span>
+        <h1><span class="zh">月夜星咏 · </span><span class="accent">服务器状态</span></h1>
+        <p class="hero-subtitle">于静谧夜空下，守望每一座服务器的微光。实时查询在线状态、人数、MOTD 与版本信息。</p>
+        <button id="refresh-all" class="refresh-button" type="button">刷新全部服务器</button>
+      </header>
+
+      <section>
+        <div id="status-board" class="server-grid" aria-live="polite"></div>
+      </section>
+
+      <footer class="site-footer">
+        <div>
+          <span>API：</span>
+          <a class="api-link" href="https://api.mcsrvstat.us/2" target="_blank" rel="noreferrer noopener">
+            https://api.mcsrvstat.us/2
+          </a>
+        </div>
+        <div>查询状态会缓存 2 分钟，可能不是最新数据</div>
+      </footer>
+    </main>
+
+    <script>
+      const mockServers = [
+        {
+          id: "lobby",
+          name: "DUT_Craft 大厅",
+          emoji: "🏛️",
+          status: "online",
+          playersText: "12 / 100",
+          version: "1.20.4",
+          playerNames: ["Steve", "Alex", "Notch", "Diana"],
+          anonymousPlayerCount: 8,
+          motdHtml: "§6欢迎来到 §bDUT_Craft§6！请遵守服务器规则，愉快游玩～",
+          addresses: ["lobby.unsafe.top:25565"],
+        },
+        {
+          id: "survival",
+          name: "DUT_Craft 生存服",
+          emoji: "⛏️",
+          status: "online",
+          playersText: "3 / 60",
+          version: "1.20.4",
+          playerNames: [],
+          anonymousPlayerCount: 0,
+          motdHtml: "§a原版生存 · 经济系统 · 领地保护",
+          addresses: ["survival.unsafe.top:25565"],
+        },
+        {
+          id: "creative",
+          name: "DUT_Craft 创造服",
+          emoji: "🎨",
+          status: "offline",
+          playersText: "—",
+          version: "—",
+          playerNames: [],
+          anonymousPlayerCount: 0,
+          motdHtml: "创造模式 · 自由建造",
+          addresses: ["creative.unsafe.top:25565"],
+        },
+        {
+          id: "test",
+          name: "DUT_Craft 测试服",
+          emoji: "🧪",
+          status: "error",
+          errorText: "连接超时，请稍后重试",
+          playersText: "—",
+          version: "—",
+          playerNames: [],
+          anonymousPlayerCount: 0,
+          motdHtml: "测试新玩法与插件",
+          addresses: ["test.unsafe.top:25565", "test2.unsafe.top:25566"],
+        },
+        {
+          id: "minigame",
+          name: "DUT_Craft 小游戏服",
+          emoji: "🎮",
+          status: "online",
+          playersText: "27 / 50",
+          version: "Paper 1.20.4",
+          playerNames: ["Miku", "Ritsu", "Yui", "Mio", "Tsumugi"],
+          anonymousPlayerCount: 22,
+          motdHtml: "§d起床战争 §e· §b空岛战争 §e· §a掘一动二",
+          addresses: ["game.unsafe.top"],
+        },
+      ];
+
+      const mcColors = {
+        "0": "#000000", "1": "#0000AA", "2": "#00AA00", "3": "#00AAAA",
+        "4": "#AA0000", "5": "#AA00AA", "6": "#FFAA00", "7": "#AAAAAA",
+        "8": "#555555", "9": "#5555FF", a: "#FF55FF", b: "#55FFFF",
+        c: "#FF5555", d: "#FF55FF", e: "#FFFF55", f: "#FFFFFF",
+      };
+
+      function renderMotd(text) {
+        if (!text) return "";
+        return text
+          .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+          .replace(/§([0-9a-f])/gi, (_, c) => {
+            const color = mcColors[c.toLowerCase()] || "inherit";
+            return `</span><span style="color:${color}">`;
+          })
+          .replace(/^([^<]*)/, (m) => `<span>${m}`)
+          .replace(/$/, "</span>");
+      }
+
+      function statusLabel(status) {
+        return { online: "Online", offline: "Offline", error: "Error", loading: "Loading" }[status] || "Unknown";
+      }
+
+      function playerChips(s) {
+        if (s.status !== "online") return '<span class="player-chip muted">无</span>';
+        if (s.playerNames.length === 0 && s.anonymousPlayerCount === 0)
+          return '<span class="player-chip muted">暂无在线玩家</span>';
+        const named = s.playerNames.map((n) => `<span class="player-chip">${n}</span>`).join("");
+        const anon = s.anonymousPlayerCount > 0
+          ? `<span class="player-chip muted">匿名玩家 ×${s.anonymousPlayerCount}</span>` : "";
+        return named + anon;
+      }
+
+      function addressMarkup(addrs) {
+        return addrs.map((a) => `<button class="address-copy" type="button" data-copy="${a}" aria-label="复制 ${a}">${a}</button>`).join("");
+      }
+
+      function cardHtml(s) {
+        if (s.status === "loading") {
+          return `
+            <header class="card-head">
+              <div class="title-wrap">
+                <span class="server-icon">${s.emoji || "📦"}</span>
+                <h2>${s.name}</h2>
+              </div>
+              <span class="status-pill loading"><span class="dot"></span>Loading</span>
+            </header>
+            <div class="line shimmer"></div>
+            <div class="line shimmer short"></div>
+            <div class="line shimmer"></div>`;
+        }
+        return `
+          <header class="card-head">
+            <div class="title-wrap">
+              <span class="server-icon">${s.emoji || "📦"}</span>
+              <h2>${s.name}</h2>
+            </div>
+            <span class="status-pill ${s.status}"><span class="dot"></span>${statusLabel(s.status)}</span>
+          </header>
+          <div class="data-row"><span class="label">在线人数</span><span class="value">${s.playersText}</span></div>
+          <div class="data-row"><span class="label">版本</span><span class="value">${s.version}</span></div>
+          <div class="data-row players-row"><span class="label">在线玩家</span><span class="value">${playerChips(s)}</span></div>
+          <div class="motd">${renderMotd(s.motdHtml)}</div>
+          <div class="copy-row">
+            <div class="address-list">${addressMarkup(s.addresses)}</div>
+            <button class="refresh-card-btn" type="button">刷新</button>
+          </div>
+          ${s.errorText ? `<p class="error-text">⚠ ${s.errorText}</p>` : ""}`;
+      }
+
+      const board = document.getElementById("status-board");
+
+      function render(list) {
+        board.innerHTML = "";
+        list.forEach((s) => {
+          const card = document.createElement("article");
+          card.className = `server-card ${s.status}`;
+          card.dataset.id = s.id;
+          card.innerHTML = cardHtml(s);
+          board.appendChild(card);
+        });
+        bindCopy();
+      }
+
+      function bindCopy() {
+        document.querySelectorAll(".address-copy").forEach((btn) => {
+          btn.onclick = () => toast(`已复制：${btn.dataset.copy}`);
+        });
+      }
+
+      function toast(msg) {
+        const t = document.createElement("div");
+        t.className = "toast";
+        t.textContent = msg;
+        document.body.appendChild(t);
+        setTimeout(() => { t.classList.add("toast-out"); setTimeout(() => t.remove(), 280); }, 1500);
+      }
+
+      const refreshBtn = document.getElementById("refresh-all");
+      refreshBtn.addEventListener("click", () => {
+        refreshBtn.disabled = true;
+        render(mockServers.map((s) => ({ ...s, status: "loading" })));
+        setTimeout(() => {
+          render(mockServers);
+          refreshBtn.disabled = false;
+          toast("已重新观测星空 ✦");
+        }, 900);
+      });
+
+      board.addEventListener("click", (e) => {
+        const btn = e.target.closest(".refresh-card-btn");
+        if (!btn) return;
+        const card = btn.closest(".server-card");
+        const id = card?.dataset.id;
+        const target = mockServers.find((s) => s.id === id);
+        if (!target) return;
+        const original = btn.textContent;
+        card.className = `server-card loading`;
+        card.innerHTML = cardHtml({ ...target, status: "loading" });
+        setTimeout(() => {
+          card.className = `server-card ${target.status}`;
+          card.innerHTML = cardHtml(target);
+          bindCopy();
+        }, 700);
+      });
+
+      render(mockServers.map((s) => ({ ...s, status: "loading" })));
+      setTimeout(() => render(mockServers), 1100);
+    </script>
+  </body>
+</html>

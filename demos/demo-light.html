@@ -1,0 +1,944 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DUT_Craft · 琉璃晨光 (Light Demo)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Noto+Serif+SC:wght@500;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* ===== 琉璃晨光 · 调色板 ===== */
+      :root {
+        --paper-1: #faf6ee;
+        --paper-2: #f1ebde;
+        --paper-3: #e7dfce;
+
+        --ink: #2b2823;
+        --ink-soft: #5c554a;
+        --ink-faint: #9a9082;
+
+        --gold: #b08348;
+        --gold-light: #d2a878;
+        --gold-soft: #e8d4b4;
+        --jade: #6f8a8e;
+        --rose: #bd7c6e;
+        --plum: #8a6e7a;
+
+        --porcelain: rgba(255, 255, 255, 0.62);
+        --porcelain-hi: rgba(255, 255, 255, 0.85);
+        --edge: rgba(176, 131, 72, 0.16);
+        --edge-soft: rgba(43, 40, 35, 0.06);
+
+        --online: #6f9a6e;
+        --offline: #b09872;
+        --error: #bd6e6e;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        min-height: 100vh;
+        color: var(--ink);
+        font-family: "Noto Sans SC", sans-serif;
+        font-weight: 300;
+        background:
+          radial-gradient(ellipse 70% 50% at 88% 6%, rgba(210, 168, 120, 0.22) 0%, transparent 45%),
+          radial-gradient(ellipse 60% 45% at 8% 92%, rgba(138, 110, 122, 0.1) 0%, transparent 50%),
+          linear-gradient(170deg, var(--paper-1) 0%, var(--paper-2) 50%, var(--paper-3) 100%);
+        background-attachment: fixed;
+        overflow-x: hidden;
+        position: relative;
+        letter-spacing: 0.01em;
+      }
+
+      /* ===== 流动晨雾 ===== */
+      .haze {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+        overflow: hidden;
+      }
+
+      .haze-blob {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(60px);
+        opacity: 0.5;
+      }
+
+      .haze-blob.b1 {
+        width: 480px;
+        height: 480px;
+        top: -120px;
+        right: -80px;
+        background: radial-gradient(circle, rgba(232, 212, 180, 0.55), transparent 70%);
+        animation: float 24s ease-in-out infinite;
+      }
+
+      .haze-blob.b2 {
+        width: 380px;
+        height: 380px;
+        top: 30%;
+        left: -100px;
+        background: radial-gradient(circle, rgba(180, 200, 205, 0.4), transparent 70%);
+        animation: float 32s ease-in-out infinite reverse;
+      }
+
+      .haze-blob.b3 {
+        width: 420px;
+        height: 420px;
+        bottom: -140px;
+        right: 20%;
+        background: radial-gradient(circle, rgba(200, 180, 200, 0.35), transparent 70%);
+        animation: float 28s ease-in-out infinite 4s;
+      }
+
+      @keyframes float {
+        0%, 100% {
+          transform: translate(0, 0) scale(1);
+        }
+        33% {
+          transform: translate(40px, -30px) scale(1.08);
+        }
+        66% {
+          transform: translate(-30px, 20px) scale(0.95);
+        }
+      }
+
+      /* 精致细线网格（极淡）*/
+      .grid-lines {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+        background-image:
+          linear-gradient(rgba(176, 131, 72, 0.035) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(176, 131, 72, 0.035) 1px, transparent 1px);
+        background-size: 64px 64px;
+        mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, #000 30%, transparent 80%);
+      }
+
+      /* 晨光光斑 */
+      .sunbeam {
+        position: fixed;
+        top: -10%;
+        right: -5%;
+        width: 300px;
+        height: 600px;
+        background: linear-gradient(200deg, rgba(232, 212, 180, 0.25), transparent 60%);
+        transform: rotate(20deg);
+        filter: blur(30px);
+        z-index: 0;
+        pointer-events: none;
+      }
+
+      /* ===== 布局 ===== */
+      .layout {
+        position: relative;
+        z-index: 1;
+        width: min(1280px, 92%);
+        margin: 0 auto;
+        padding: 4rem 0 5rem;
+      }
+
+      /* ===== Hero ===== */
+      .hero {
+        position: relative;
+        margin-bottom: 3rem;
+        animation: rise 700ms cubic-bezier(0.2, 0.9, 0.3, 1) both;
+      }
+
+      .hero-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.7rem;
+        font-family: "Fraunces", serif;
+        font-style: italic;
+        font-weight: 500;
+        color: var(--gold);
+        font-size: 1.15rem;
+        letter-spacing: 0.08em;
+        margin-bottom: 0.6rem;
+      }
+
+      .hero-kicker::before,
+      .hero-kicker::after {
+        content: "";
+        width: 36px;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, var(--gold-light), transparent);
+      }
+
+      .hero h1 {
+        margin: 0;
+        font-family: "Fraunces", "Noto Serif SC", serif;
+        font-weight: 500;
+        font-size: clamp(2.2rem, 5.5vw, 3.6rem);
+        line-height: 1.08;
+        letter-spacing: -0.005em;
+        color: var(--ink);
+      }
+
+      .hero h1 .zh {
+        font-family: "Noto Serif SC", serif;
+        font-weight: 700;
+      }
+
+      .hero h1 .accent {
+        font-style: italic;
+        color: var(--gold);
+        position: relative;
+      }
+
+      .hero-subtitle {
+        margin: 1rem 0 0;
+        color: var(--ink-soft);
+        max-width: 50ch;
+        font-size: 0.98rem;
+        line-height: 1.7;
+        font-weight: 400;
+      }
+
+      .refresh-button {
+        margin-top: 1.6rem;
+        position: relative;
+        border: 1px solid rgba(176, 131, 72, 0.3);
+        background: linear-gradient(135deg, var(--porcelain-hi), var(--porcelain));
+        backdrop-filter: blur(8px);
+        color: var(--ink);
+        padding: 0.8rem 1.8rem;
+        border-radius: 999px;
+        font-family: "Noto Serif SC", serif;
+        font-weight: 500;
+        font-size: 0.98rem;
+        letter-spacing: 0.05em;
+        cursor: pointer;
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.9),
+          0 12px 28px -10px rgba(176, 131, 72, 0.35);
+        transition: all 240ms ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+      }
+
+      .refresh-button::before {
+        content: "❋";
+        color: var(--gold);
+        font-size: 0.85rem;
+      }
+
+      .refresh-button:hover {
+        background: linear-gradient(135deg, #fff, rgba(232, 212, 180, 0.6));
+        border-color: var(--gold-light);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.9),
+          0 16px 36px -10px rgba(176, 131, 72, 0.45);
+        transform: translateY(-1px);
+      }
+
+      .refresh-button:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      /* ===== 卡片网格 ===== */
+      .server-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(min(420px, 100%), 1fr));
+        gap: 1.5rem;
+      }
+
+      /* ===== 瓷感磨砂卡片 ===== */
+      .server-card {
+        position: relative;
+        background: linear-gradient(155deg, var(--porcelain-hi) 0%, var(--porcelain) 50%, rgba(232, 220, 196, 0.4) 100%);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.7);
+        border-radius: 16px;
+        padding: 1.4rem 1.5rem 1.3rem;
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.9),
+          0 1px 2px rgba(43, 40, 35, 0.04),
+          0 18px 40px -14px rgba(140, 110, 70, 0.22),
+          0 8px 18px -10px rgba(140, 110, 70, 0.12);
+        transition: all 300ms cubic-bezier(0.2, 0.9, 0.3, 1);
+        animation: rise 600ms cubic-bezier(0.2, 0.9, 0.3, 1) both;
+        overflow: hidden;
+      }
+
+      /* 顶部光泽 */
+      .server-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 12%;
+        right: 12%;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.95), transparent);
+      }
+
+      .server-card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(176, 131, 72, 0.3);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.9),
+          0 1px 2px rgba(43, 40, 35, 0.04),
+          0 26px 50px -14px rgba(140, 110, 70, 0.28),
+          0 10px 22px -10px rgba(140, 110, 70, 0.16);
+      }
+
+      .server-card.online {
+        border-color: rgba(111, 154, 110, 0.32);
+      }
+
+      .server-card.offline {
+        opacity: 0.95;
+      }
+
+      .server-card.error {
+        border-color: rgba(189, 110, 110, 0.32);
+      }
+
+      .card-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.6rem;
+      }
+
+      .title-wrap {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        min-width: 0;
+      }
+
+      .server-icon {
+        width: 2.6rem;
+        height: 2.6rem;
+        border-radius: 0.7rem;
+        border: 1px solid rgba(176, 131, 72, 0.2);
+        background: linear-gradient(135deg, rgba(232, 212, 180, 0.7), rgba(210, 168, 120, 0.4));
+        object-fit: cover;
+        flex: 0 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.35rem;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+      }
+
+      .card-head h2 {
+        margin: 0;
+        font-family: "Noto Serif SC", serif;
+        font-size: 1.18rem;
+        font-weight: 700;
+        overflow-wrap: anywhere;
+        color: var(--ink);
+        letter-spacing: 0.01em;
+      }
+
+      .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        border-radius: 999px;
+        padding: 0.3rem 0.75rem;
+        font-size: 0.74rem;
+        font-weight: 500;
+        font-family: "Fraunces", serif;
+        font-style: italic;
+        letter-spacing: 0.06em;
+        border: 1px solid transparent;
+        white-space: nowrap;
+        flex: 0 0 auto;
+        background: rgba(255, 255, 255, 0.5);
+      }
+
+      .status-pill .dot {
+        width: 0.5rem;
+        height: 0.5rem;
+        border-radius: 50%;
+      }
+
+      .status-pill.online {
+        color: #4a7a4a;
+        border-color: rgba(111, 154, 110, 0.4);
+      }
+
+      .status-pill.online .dot {
+        background: var(--online);
+        box-shadow: 0 0 0 3px rgba(111, 154, 110, 0.18);
+        animation: pulse 2.6s ease-in-out infinite;
+      }
+
+      .status-pill.offline {
+        color: #8a7048;
+        border-color: rgba(176, 152, 114, 0.4);
+      }
+
+      .status-pill.offline .dot {
+        background: var(--offline);
+      }
+
+      .status-pill.error {
+        color: #9a5050;
+        border-color: rgba(189, 110, 110, 0.4);
+      }
+
+      .status-pill.error .dot {
+        background: var(--error);
+      }
+
+      .status-pill.loading {
+        color: var(--gold);
+        border-color: rgba(176, 131, 72, 0.4);
+      }
+
+      .status-pill.loading .dot {
+        background: var(--gold);
+        animation: pulse 1.3s ease-in-out infinite;
+      }
+
+      @keyframes pulse {
+        0%, 100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 0.4;
+          transform: scale(0.8);
+        }
+      }
+
+      .data-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 0.8rem;
+        gap: 0.6rem;
+        font-size: 0.9rem;
+        padding-bottom: 0.6rem;
+        border-bottom: 1px solid rgba(43, 40, 35, 0.07);
+      }
+
+      .data-row:last-of-type {
+        border-bottom: none;
+      }
+
+      .label {
+        color: var(--ink-faint);
+        font-weight: 400;
+        font-size: 0.82rem;
+        letter-spacing: 0.04em;
+      }
+
+      .value {
+        font-family: "JetBrains Mono", monospace;
+        font-weight: 700;
+        color: var(--ink);
+      }
+
+      .players-row {
+        align-items: flex-start;
+      }
+
+      .players-row .label {
+        padding-top: 0.32rem;
+      }
+
+      .players-row .value {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+        justify-content: flex-end;
+        max-width: 72%;
+      }
+
+      .player-chip {
+        display: inline-block;
+        padding: 0.22rem 0.65rem;
+        border: 1px solid rgba(176, 131, 72, 0.28);
+        border-radius: 999px;
+        background: rgba(232, 212, 180, 0.45);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.74rem;
+        font-weight: 700;
+        color: var(--gold);
+        letter-spacing: 0.02em;
+      }
+
+      .player-chip.muted {
+        border-color: rgba(43, 40, 35, 0.12);
+        background: rgba(255, 255, 255, 0.4);
+        color: var(--ink-faint);
+        font-family: "Noto Sans SC", sans-serif;
+        font-weight: 400;
+      }
+
+      .motd {
+        margin: 0.95rem 0 0;
+        color: var(--ink);
+        font-size: 0.9rem;
+        line-height: 1.6;
+        min-height: 2.6em;
+        padding: 0.7rem 0.9rem;
+        background: linear-gradient(135deg, rgba(232, 212, 180, 0.4), rgba(255, 255, 255, 0.4));
+        border-left: 2px solid var(--gold-light);
+        border-radius: 0 8px 8px 0;
+        font-family: "Noto Serif SC", serif;
+        font-weight: 500;
+      }
+
+      .copy-row {
+        margin-top: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.6rem;
+        flex-wrap: wrap;
+      }
+
+      .address-list {
+        display: grid;
+        gap: 0.3rem;
+        justify-items: start;
+        min-width: 0;
+      }
+
+      .address-copy {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.35rem 0.8rem;
+        border: 1px solid rgba(176, 131, 72, 0.2);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.55);
+        color: var(--ink-soft);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.78rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 220ms ease;
+        overflow-wrap: anywhere;
+      }
+
+      .address-copy:hover {
+        border-color: var(--gold-light);
+        background: rgba(232, 212, 180, 0.6);
+        color: var(--gold);
+      }
+
+      .address-copy::before {
+        content: "❋";
+        color: var(--gold-light);
+        font-size: 0.7rem;
+      }
+
+      .refresh-card-btn {
+        flex: 0 0 auto;
+        border: 1px solid rgba(43, 40, 35, 0.14);
+        color: var(--ink-soft);
+        background: rgba(255, 255, 255, 0.5);
+        padding: 0.42rem 1rem;
+        border-radius: 999px;
+        font-family: "Noto Serif SC", serif;
+        font-weight: 500;
+        font-size: 0.82rem;
+        letter-spacing: 0.04em;
+        cursor: pointer;
+        transition: all 220ms ease;
+      }
+
+      .refresh-card-btn:hover {
+        border-color: var(--gold-light);
+        color: var(--gold);
+        background: rgba(232, 212, 180, 0.5);
+      }
+
+      .error-text {
+        margin: 0.7rem 0 0;
+        color: var(--error);
+        font-size: 0.8rem;
+        padding: 0.45rem 0.8rem;
+        border-radius: 8px;
+        background: rgba(189, 110, 110, 0.08);
+        border-left: 2px solid var(--error);
+      }
+
+      /* ===== 加载骨架 ===== */
+      .line {
+        height: 11px;
+        border-radius: 6px;
+        margin-top: 0.85rem;
+        background: rgba(43, 40, 35, 0.06);
+      }
+
+      .line.short {
+        width: 62%;
+      }
+
+      .shimmer {
+        background: linear-gradient(90deg, rgba(43, 40, 35, 0.05), rgba(176, 131, 72, 0.14), rgba(43, 40, 35, 0.05));
+        background-size: 200% 100%;
+        animation: shimmer 1.7s linear infinite;
+      }
+
+      @keyframes shimmer {
+        from {
+          background-position: 100% 0;
+        }
+        to {
+          background-position: -100% 0;
+        }
+      }
+
+      /* ===== 页脚 ===== */
+      .site-footer {
+        position: relative;
+        z-index: 1;
+        margin-top: 3rem;
+        padding: 1.1rem 1.5rem;
+        border-radius: 16px;
+        background: var(--porcelain);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.7);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        color: var(--ink-soft);
+        font-size: 0.85rem;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .api-link {
+        color: var(--gold);
+        font-family: "JetBrains Mono", monospace;
+        text-decoration: none;
+        overflow-wrap: anywhere;
+        font-weight: 700;
+        border-bottom: 1px solid rgba(176, 131, 72, 0.3);
+        transition: border-color 220ms ease;
+      }
+
+      .api-link:hover {
+        border-color: var(--gold);
+      }
+
+      /* ===== Toast ===== */
+      .toast {
+        position: fixed;
+        right: 1.2rem;
+        bottom: 1.2rem;
+        padding: 0.75rem 1.2rem;
+        border-radius: 12px;
+        border: 1px solid rgba(176, 131, 72, 0.3);
+        background: rgba(250, 246, 238, 0.92);
+        backdrop-filter: blur(12px);
+        color: var(--ink);
+        font-family: "Noto Serif SC", serif;
+        font-weight: 500;
+        font-size: 0.9rem;
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.9),
+          0 14px 34px -10px rgba(140, 110, 70, 0.3);
+        z-index: 20;
+        transition: opacity 280ms ease, transform 280ms ease;
+      }
+
+      .toast-out {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      /* ===== 动画 ===== */
+      @keyframes rise {
+        from {
+          opacity: 0;
+          transform: translateY(16px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .server-card:nth-child(1) { animation-delay: 80ms; }
+      .server-card:nth-child(2) { animation-delay: 160ms; }
+      .server-card:nth-child(3) { animation-delay: 240ms; }
+      .server-card:nth-child(4) { animation-delay: 320ms; }
+      .server-card:nth-child(5) { animation-delay: 400ms; }
+
+      /* ===== 响应式 ===== */
+      @media (max-width: 720px) {
+        .layout {
+          padding: 2.5rem 0 4rem;
+        }
+
+        .server-grid {
+          grid-template-columns: 1fr;
+          gap: 1.1rem;
+        }
+
+        .card-head {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .copy-row {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .players-row .value {
+          max-width: 100%;
+          justify-content: flex-start;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- 流动晨雾 -->
+    <div class="haze" aria-hidden="true">
+      <div class="haze-blob b1"></div>
+      <div class="haze-blob b2"></div>
+      <div class="haze-blob b3"></div>
+    </div>
+    <div class="grid-lines" aria-hidden="true"></div>
+    <div class="sunbeam" aria-hidden="true"></div>
+
+    <main class="layout">
+      <header class="hero">
+        <span class="hero-kicker">Auroran Porcelain</span>
+        <h1><span class="zh">琉璃晨光 · </span><span class="accent">服务器状态</span></h1>
+        <p class="hero-subtitle">于晨光熹微中，凝望每一座服务器的轮廓。实时查询在线状态、人数、MOTD 与版本信息。</p>
+        <button id="refresh-all" class="refresh-button" type="button">刷新全部服务器</button>
+      </header>
+
+      <section>
+        <div id="status-board" class="server-grid" aria-live="polite"></div>
+      </section>
+
+      <footer class="site-footer">
+        <div>
+          <span>API：</span>
+          <a class="api-link" href="https://api.mcsrvstat.us/2" target="_blank" rel="noreferrer noopener">
+            https://api.mcsrvstat.us/2
+          </a>
+        </div>
+        <div>查询状态会缓存 2 分钟，可能不是最新数据</div>
+      </footer>
+    </main>
+
+    <script>
+      const mockServers = [
+        {
+          id: "lobby",
+          name: "DUT_Craft 大厅",
+          emoji: "🏛️",
+          status: "online",
+          playersText: "12 / 100",
+          version: "1.20.4",
+          playerNames: ["Steve", "Alex", "Notch", "Diana"],
+          anonymousPlayerCount: 8,
+          motdHtml: "§6欢迎来到 §bDUT_Craft§6！请遵守服务器规则，愉快游玩～",
+          addresses: ["lobby.unsafe.top:25565"],
+        },
+        {
+          id: "survival",
+          name: "DUT_Craft 生存服",
+          emoji: "⛏️",
+          status: "online",
+          playersText: "3 / 60",
+          version: "1.20.4",
+          playerNames: [],
+          anonymousPlayerCount: 0,
+          motdHtml: "§a原版生存 · 经济系统 · 领地保护",
+          addresses: ["survival.unsafe.top:25565"],
+        },
+        {
+          id: "creative",
+          name: "DUT_Craft 创造服",
+          emoji: "🎨",
+          status: "offline",
+          playersText: "—",
+          version: "—",
+          playerNames: [],
+          anonymousPlayerCount: 0,
+          motdHtml: "创造模式 · 自由建造",
+          addresses: ["creative.unsafe.top:25565"],
+        },
+        {
+          id: "test",
+          name: "DUT_Craft 测试服",
+          emoji: "🧪",
+          status: "error",
+          errorText: "连接超时，请稍后重试",
+          playersText: "—",
+          version: "—",
+          playerNames: [],
+          anonymousPlayerCount: 0,
+          motdHtml: "测试新玩法与插件",
+          addresses: ["test.unsafe.top:25565", "test2.unsafe.top:25566"],
+        },
+        {
+          id: "minigame",
+          name: "DUT_Craft 小游戏服",
+          emoji: "🎮",
+          status: "online",
+          playersText: "27 / 50",
+          version: "Paper 1.20.4",
+          playerNames: ["Miku", "Ritsu", "Yui", "Mio", "Tsumugi"],
+          anonymousPlayerCount: 22,
+          motdHtml: "§d起床战争 §e· §b空岛战争 §e· §a掘一动二",
+          addresses: ["game.unsafe.top"],
+        },
+      ];
+
+      const mcColors = {
+        "0": "#000000", "1": "#1a1a6e", "2": "#2e6e2e", "3": "#2e6e6e",
+        "4": "#7a2e2e", "5": "#5e2e5e", "6": "#8a6212", "7": "#5a5a5a",
+        "8": "#3a3a3a", "9": "#3a3a8a", a: "#8a3a6a", b: "#2e6e7a",
+        c: "#8a2e2e", d: "#8a4e6a", e: "#8a6e1a", f: "#3a3530",
+      };
+
+      function renderMotd(text) {
+        if (!text) return "";
+        return text
+          .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+          .replace(/§([0-9a-f])/gi, (_, c) => {
+            const color = mcColors[c.toLowerCase()] || "inherit";
+            return `</span><span style="color:${color}">`;
+          })
+          .replace(/^([^<]*)/, (m) => `<span>${m}`)
+          .replace(/$/, "</span>");
+      }
+
+      function statusLabel(status) {
+        return { online: "Online", offline: "Offline", error: "Error", loading: "Loading" }[status] || "Unknown";
+      }
+
+      function playerChips(s) {
+        if (s.status !== "online") return '<span class="player-chip muted">无</span>';
+        if (s.playerNames.length === 0 && s.anonymousPlayerCount === 0)
+          return '<span class="player-chip muted">暂无在线玩家</span>';
+        const named = s.playerNames.map((n) => `<span class="player-chip">${n}</span>`).join("");
+        const anon = s.anonymousPlayerCount > 0
+          ? `<span class="player-chip muted">匿名玩家 ×${s.anonymousPlayerCount}</span>` : "";
+        return named + anon;
+      }
+
+      function addressMarkup(addrs) {
+        return addrs.map((a) => `<button class="address-copy" type="button" data-copy="${a}" aria-label="复制 ${a}">${a}</button>`).join("");
+      }
+
+      function cardHtml(s) {
+        if (s.status === "loading") {
+          return `
+            <header class="card-head">
+              <div class="title-wrap">
+                <span class="server-icon">${s.emoji || "📦"}</span>
+                <h2>${s.name}</h2>
+              </div>
+              <span class="status-pill loading"><span class="dot"></span>Loading</span>
+            </header>
+            <div class="line shimmer"></div>
+            <div class="line shimmer short"></div>
+            <div class="line shimmer"></div>`;
+        }
+        return `
+          <header class="card-head">
+            <div class="title-wrap">
+              <span class="server-icon">${s.emoji || "📦"}</span>
+              <h2>${s.name}</h2>
+            </div>
+            <span class="status-pill ${s.status}"><span class="dot"></span>${statusLabel(s.status)}</span>
+          </header>
+          <div class="data-row"><span class="label">在线人数</span><span class="value">${s.playersText}</span></div>
+          <div class="data-row"><span class="label">版本</span><span class="value">${s.version}</span></div>
+          <div class="data-row players-row"><span class="label">在线玩家</span><span class="value">${playerChips(s)}</span></div>
+          <div class="motd">${renderMotd(s.motdHtml)}</div>
+          <div class="copy-row">
+            <div class="address-list">${addressMarkup(s.addresses)}</div>
+            <button class="refresh-card-btn" type="button">刷新</button>
+          </div>
+          ${s.errorText ? `<p class="error-text">⚠ ${s.errorText}</p>` : ""}`;
+      }
+
+      const board = document.getElementById("status-board");
+
+      function render(list) {
+        board.innerHTML = "";
+        list.forEach((s) => {
+          const card = document.createElement("article");
+          card.className = `server-card ${s.status}`;
+          card.dataset.id = s.id;
+          card.innerHTML = cardHtml(s);
+          board.appendChild(card);
+        });
+        bindCopy();
+      }
+
+      function bindCopy() {
+        document.querySelectorAll(".address-copy").forEach((btn) => {
+          btn.onclick = () => toast(`已复制：${btn.dataset.copy}`);
+        });
+      }
+
+      function toast(msg) {
+        const t = document.createElement("div");
+        t.className = "toast";
+        t.textContent = msg;
+        document.body.appendChild(t);
+        setTimeout(() => { t.classList.add("toast-out"); setTimeout(() => t.remove(), 280); }, 1500);
+      }
+
+      const refreshBtn = document.getElementById("refresh-all");
+      refreshBtn.addEventListener("click", () => {
+        refreshBtn.disabled = true;
+        render(mockServers.map((s) => ({ ...s, status: "loading" })));
+        setTimeout(() => {
+          render(mockServers);
+          refreshBtn.disabled = false;
+          toast("晨光已重新洒落 ❋");
+        }, 900);
+      });
+
+      board.addEventListener("click", (e) => {
+        const btn = e.target.closest(".refresh-card-btn");
+        if (!btn) return;
+        const card = btn.closest(".server-card");
+        const id = card?.dataset.id;
+        const target = mockServers.find((s) => s.id === id);
+        if (!target) return;
+        card.className = `server-card loading`;
+        card.innerHTML = cardHtml({ ...target, status: "loading" });
+        setTimeout(() => {
+          card.className = `server-card ${target.status}`;
+          card.innerHTML = cardHtml(target);
+          bindCopy();
+        }, 700);
+      });
+
+      render(mockServers.map((s) => ({ ...s, status: "loading" })));
+      setTimeout(() => render(mockServers), 1100);
+    </script>
+  </body>
+</html>

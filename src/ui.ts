@@ -11,18 +11,18 @@ function escapeHtml(input: string): string {
 
 function statusLabel(status: ServerViewModel["status"]): string {
   if (status === "online") {
-    return "在线";
+    return "Online";
   }
 
   if (status === "offline") {
-    return "离线";
+    return "Offline";
   }
 
   if (status === "loading") {
-    return "加载中";
+    return "Loading";
   }
 
-  return "错误";
+  return "Error";
 }
 
 function playerNamesLabel(view: ServerViewModel): string {
@@ -90,7 +90,7 @@ export function renderLoadingCard(parent: HTMLElement, id: string, name: string,
         <span class="server-icon placeholder" aria-hidden="true"></span>
         <h2>${escapeHtml(name)}</h2>
       </div>
-      <span class="status-pill loading">加载中</span>
+      <span class="status-pill loading"><span class="dot" aria-hidden="true"></span>Loading</span>
     </header>
     <p class="address" title="${escapeHtml(addressTitle(addresses))}">${addresses.map((item) => escapeHtml(item)).join("<br>")}</p>
     <div class="line shimmer"></div>
@@ -115,7 +115,7 @@ export function upsertServerCard(parent: HTMLElement, view: ServerViewModel): vo
         }
         <h2>${escapeHtml(view.name)}</h2>
       </div>
-      <span class="status-pill ${view.status}">${statusLabel(view.status)}</span>
+      <span class="status-pill ${view.status}"><span class="dot" aria-hidden="true"></span>${statusLabel(view.status)}</span>
     </header>
 
     <div class="data-row">
@@ -128,7 +128,7 @@ export function upsertServerCard(parent: HTMLElement, view: ServerViewModel): vo
       <span class="value">${escapeHtml(view.version)}</span>
     </div>
 
-    <div class="data-row players-row">
+    <div class="data-row players-row underset">
       <span class="label">在线玩家</span>
       <span class="value" title="${escapeHtml(playerNamesLabel(view))}">${playerNamesMarkup(view)}</span>
     </div>

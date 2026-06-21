@@ -2,6 +2,10 @@ import { getServerId, loadServerList, toAddressList } from "./config";
 import { fetchServerView } from "./api";
 import type { ServerTarget, ServerViewModel } from "./types";
 import { renderLoadingCard, upsertServerCard } from "./ui";
+import { initThemeToggle } from "./theme";
+
+// 初始化主题切换（按钮绑定 + 文案同步 + 系统偏好跟随）
+initThemeToggle();
 
 const boardNode = document.querySelector<HTMLElement>("#status-board");
 const refreshButtonNode = document.querySelector<HTMLButtonElement>("#refresh-all");
