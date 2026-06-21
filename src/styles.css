@@ -798,7 +798,7 @@ body {
 }
 
 .label {
-  color: var(--text-faint);
+  color: var(--text-soft);
   font-weight: 300;
   font-size: 0.82rem;
   letter-spacing: 0.04em;
@@ -1150,6 +1150,18 @@ body {
   .card-head {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  /* 窄屏下在线人数与版本各占一行 */
+  .data-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .data-field {
+    width: 100%;
+    justify-content: space-between;
   }
 
   .copy-row {
