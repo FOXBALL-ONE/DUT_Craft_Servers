@@ -1,8 +1,11 @@
 import type { ServerViewModel } from "./types";
+// 默认/错误图标贴图（自带透明背景，直接作 img 使用）。
+// 通过 import 让 Vite 处理路径与 base 前缀，适配 GitHub Pages 子路径部署。
+import grassIconUrl from "../assets/textures/Grass_Block.png";
+import barrierIconUrl from "../assets/textures/Barrier.png";
 
-// 默认/错误图标贴图（自带透明背景，直接作 img 使用）
-const GRASS_ICON_URL = "/assets/textures/Grass_Block.png";
-const BARRIER_ICON_URL = "/assets/textures/Barrier.png";
+const GRASS_ICON_URL = grassIconUrl;
+const BARRIER_ICON_URL = barrierIconUrl;
 
 function escapeHtml(input: string): string {
   return input
