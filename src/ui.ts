@@ -11,18 +11,18 @@ function escapeHtml(input: string): string {
 
 function statusLabel(status: ServerViewModel["status"]): string {
   if (status === "online") {
-    return "Online";
+    return "在线";
   }
 
   if (status === "offline") {
-    return "Offline";
+    return "离线";
   }
 
   if (status === "loading") {
-    return "Loading";
+    return "加载中";
   }
 
-  return "Error";
+  return "错误";
 }
 
 function playerNamesLabel(view: ServerViewModel): string {
@@ -85,16 +85,18 @@ export function renderLoadingCard(parent: HTMLElement, id: string, name: string,
   card.className = "server-card loading";
   card.dataset.serverId = id;
   card.innerHTML = `
-    <header class="card-head">
-      <div class="title-wrap">
-        <span class="server-icon placeholder" aria-hidden="true"></span>
-        <h2>${escapeHtml(name)}</h2>
-      </div>
-      <span class="status-pill loading"><span class="dot" aria-hidden="true"></span>Loading</span>
-    </header>
-    <p class="address" title="${escapeHtml(addressTitle(addresses))}">${addresses.map((item) => escapeHtml(item)).join("<br>")}</p>
-    <div class="line shimmer"></div>
-    <div class="line shimmer short"></div>
+    <span class="server-icon placeholder" aria-hidden="true"></span>
+    <div class="card-body">
+      <header class="card-head">
+        <div class="title-wrap">
+          <h2>${escapeHtml(name)}</h2>
+        </div>
+        <span class="status-pill loading"><span class="dot" aria-hidden="true"></span>加载中</span>
+      </header>
+      <p class="address" title="${escapeHtml(addressTitle(addresses))}">${addresses.map((item) => escapeHtml(item)).join("<br>")}</p>
+      <div class="line shimmer"></div>
+      <div class="line shimmer short"></div>
+    </div>
   `;
   parent.appendChild(card);
 }
@@ -106,43 +108,46 @@ export function upsertServerCard(parent: HTMLElement, view: ServerViewModel): vo
   card.className = `server-card ${view.status}`;
   card.dataset.serverId = view.id;
   card.innerHTML = `
-    <header class="card-head">
-      <div class="title-wrap">
-        ${
-          view.iconDataUrl
-            ? `<img class="server-icon" src="${escapeHtml(view.iconDataUrl)}" alt="${escapeHtml(view.name)} 图标" loading="lazy" />`
-            : '<span class="server-icon placeholder" aria-hidden="true"></span>'
-        }
-        <h2>${escapeHtml(view.name)}</h2>
+    ${
+      view.iconDataUrl
+        ? `<img class="server-icon" src="${escapeHtml(view.iconDataUrl)}" alt="${escapeHtml(view.name)} 图标" loading="lazy" />`
+        : '<span class="server-icon placeholder" aria-hidden="true"></span>'
+    }
+    <div class="card-body">
+      <header class="card-head">
+        <div class="title-wrap">
+          <h2>${escapeHtml(view.name)}</h2>
+        </div>
+        <span class="status-pill ${view.status}"><span class="dot" aria-hidden="true"></span>${statusLabel(view.status)}</span>
+      </header>
+
+      <div class="data-row">
+        <div class="data-field">
+          <span class="label">在线人数</span>
+          <span class="value">${escapeHtml(view.playersText)}</span>
+        </div>
+        <div class="data-field">
+          <span class="label">版本</span>
+          <span class="value">${escapeHtml(view.version)}</span>
+        </div>
       </div>
-      <span class="status-pill ${view.status}"><span class="dot" aria-hidden="true"></span>${statusLabel(view.status)}</span>
-    </header>
 
-    <div class="data-row">
-      <span class="label">在线人数</span>
-      <span class="value">${escapeHtml(view.playersText)}</span>
-    </div>
-
-    <div class="data-row">
-      <span class="label">版本</span>
-      <span class="value">${escapeHtml(view.version)}</span>
-    </div>
-
-    <div class="data-row players-row underset">
-      <span class="label">在线玩家</span>
-      <span class="value" title="${escapeHtml(playerNamesLabel(view))}">${playerNamesMarkup(view)}</span>
-    </div>
-
-    <div class="motd" title="${escapeHtml(view.motdText)}">${view.motdHtml ?? escapeHtml(view.motdText)}</div>
-
-    <div class="copy-row">
-      <div class="address-list" title="${escapeHtml(addressTitle(view.addresses))}">${addressMarkup(view.addresses)}</div>
-      <div class="button-row">
-        <button class="refresh-card-btn" type="button" aria-label="刷新服务器 ${escapeHtml(view.name)}">刷新</button>
+      <div class="data-row players-row underset">
+        <span class="label">在线玩家</span>
+        <span class="value" title="${escapeHtml(playerNamesLabel(view))}">${playerNamesMarkup(view)}</span>
       </div>
-    </div>
 
-    ${view.errorText ? `<p class="error-text">${escapeHtml(view.errorText)}</p>` : ""}
+      <div class="motd" title="${escapeHtml(view.motdText)}">${view.motdHtml ?? escapeHtml(view.motdText)}</div>
+
+      <div class="copy-row">
+        <div class="address-list" title="${escapeHtml(addressTitle(view.addresses))}">${addressMarkup(view.addresses)}</div>
+        <div class="button-row">
+          <button class="refresh-card-btn" type="button" aria-label="刷新服务器 ${escapeHtml(view.name)}">刷新</button>
+        </div>
+      </div>
+
+      ${view.errorText ? `<p class="error-text">${escapeHtml(view.errorText)}</p>` : ""}
+    </div>
   `;
 
   if (!existing) {

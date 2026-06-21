@@ -33,30 +33,23 @@
       <div class="stars-mid"></div>
       <div class="stars-far"></div>
       <div class="moon"></div>
-      <div class="meteor m1"></div>
-      <div class="meteor m2"></div>
-      <div class="meteor m3"></div>
-      <!-- 琉璃晨光（light）-->
-      <div class="grid-lines"></div>
-      <div class="haze-blob b1"></div>
-      <div class="haze-blob b2"></div>
-      <div class="haze-blob b3"></div>
-      <div class="sunbeam-streak s1"></div>
-      <div class="sunbeam-streak s2"></div>
-      <div class="sunbeam-streak s3"></div>
+      <!-- 流星由 theme.ts 按随机数量/间隔动态生成 -->
+      <!-- 晴空日照（light）-->
+      <div class="sun"></div>
     </div>
 
     <main class="layout">
       <header class="hero">
         <div class="hero-top">
-          <span class="hero-kicker" id="hero-kicker">Lunar Nocturne</span>
-          <button id="theme-toggle" class="theme-toggle" type="button" aria-label="切换明暗主题" title="切换明暗主题">
-            <span class="icon-moon" aria-hidden="true">🌙</span>
-            <span class="icon-sun" aria-hidden="true">☀️</span>
-          </button>
+          <h1>DUT Craft 服务器列表</h1>
+          <div class="theme-switch">
+            <span class="theme-name" id="theme-name" aria-hidden="true"></span>
+            <button id="theme-toggle" class="theme-toggle" type="button" aria-label="切换明暗主题" title="切换明暗主题">
+              <span class="icon-moon" aria-hidden="true">🌙</span>
+              <span class="icon-sun" aria-hidden="true">☀️</span>
+            </button>
+          </div>
         </div>
-        <h1><span class="zh" id="hero-title-zh">月夜星咏 · </span><span class="accent">服务器状态</span></h1>
-        <p class="hero-subtitle" id="hero-subtitle">于静谧夜空下，守望每一座服务器的微光。实时查询预设服务器的在线状态、人数、MOTD 与版本信息。</p>
         <button id="refresh-all" class="refresh-button" type="button" aria-label="刷新所有服务器状态">
           刷新全部服务器
         </button>
