@@ -4,10 +4,10 @@ import { getPrimaryAddress, getServerId, toAddressList } from "./config";
 const API_BASE = "https://api.mcsrvstat.us/2";
 const REQUEST_TIMEOUT_MS = 8000;
 
-function withTimeout(timeoutMs: number): AbortController {
+function withTimeout(timeoutMs: number): { signal: AbortSignal; clearTimer: () => void } {
   const controller = new AbortController();
-  setTimeout(() => controller.abort(), timeoutMs);
-  return controller;
+  const timerId = setTimeout(() => controller.abort(), timeoutMs);
+  return { signal: controller.signal, clearTimer: () => clearTimeout(timerId) };
 }
 
 function normalizeMotd(cleanMotd?: string[]): string {
@@ -139,12 +139,12 @@ export async function fetchServerView(server: ServerTarget): Promise<ServerViewM
   const id = getServerId(server);
   const addresses = toAddressList(server);
   const address = getPrimaryAddress(server);
-  const controller = withTimeout(REQUEST_TIMEOUT_MS);
+  const { signal, clearTimer } = withTimeout(REQUEST_TIMEOUT_MS);
 
   try {
     const response = await fetch(`${API_BASE}/${address}`, {
       method: "GET",
-      signal: controller.signal
+      signal
     });
 
     if (!response.ok) {
@@ -207,5 +207,7 @@ export async function fetchServerView(server: ServerTarget): Promise<ServerViewM
       motdText: "无法获取服务器状态",
       errorText: reason
     };
+  } finally {
+    clearTimer();
   }
 }

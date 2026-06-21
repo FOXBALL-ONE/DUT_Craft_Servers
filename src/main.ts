@@ -49,7 +49,7 @@ function activityPriority(view: ServerViewModel): number {
 function sortViews(views: ServerViewModel[]): ServerViewModel[] {
   const indexById = new Map(activeServerList.map((item, index) => [getServerId(item), index]));
 
-  return views.sort((left, right) => {
+  return [...views].sort((left, right) => {
     const leftPriority = activityPriority(left);
     const rightPriority = activityPriority(right);
     if (leftPriority !== rightPriority) {
@@ -67,9 +67,27 @@ function sortViews(views: ServerViewModel[]): ServerViewModel[] {
 }
 
 function renderSortedViews(views: ServerViewModel[]): void {
-  board.innerHTML = "";
-  for (const view of sortViews([...views])) {
+  const sorted = sortViews(views);
+  const validIds = new Set(sorted.map((v) => v.id));
+
+  // Upsert each card in place (upsertServerCard handles create-or-update)
+  for (const view of sorted) {
     upsertServerCard(board, view);
+  }
+
+  // Reorder DOM children to match sorted order
+  for (const view of sorted) {
+    const card = board.querySelector<HTMLElement>(`[data-server-id="${CSS.escape(view.id)}"]`);
+    if (card) {
+      board.appendChild(card);
+    }
+  }
+
+  // Remove cards whose server no longer exists
+  for (const child of Array.from(board.querySelectorAll<HTMLElement>(".server-card"))) {
+    if (child.dataset.serverId && !validIds.has(child.dataset.serverId)) {
+      child.remove();
+    }
   }
 }
 
