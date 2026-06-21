@@ -1,5 +1,9 @@
 import type { ServerViewModel } from "./types";
 
+// 默认/错误图标贴图（自带透明背景，直接作 img 使用）
+const GRASS_ICON_URL = "/assets/textures/Grass_Block.png";
+const BARRIER_ICON_URL = "/assets/textures/Barrier.png";
+
 function escapeHtml(input: string): string {
   return input
     .replace(/&/g, "&amp;")
@@ -23,6 +27,19 @@ function statusLabel(status: ServerViewModel["status"]): string {
   }
 
   return "错误";
+}
+
+/** 服务器图标标记：错误状态用屏障，无图标用草方块，否则用服务器图标。 */
+function serverIconMarkup(view: ServerViewModel): string {
+  if (view.status === "error") {
+    return `<img class="server-icon" src="${BARRIER_ICON_URL}" alt="${escapeHtml(view.name)} 不可用" loading="lazy" />`;
+  }
+
+  if (view.iconDataUrl) {
+    return `<img class="server-icon" src="${escapeHtml(view.iconDataUrl)}" alt="${escapeHtml(view.name)} 图标" loading="lazy" />`;
+  }
+
+  return `<img class="server-icon" src="${GRASS_ICON_URL}" alt="${escapeHtml(view.name)} 默认图标" loading="lazy" />`;
 }
 
 function playerNamesLabel(view: ServerViewModel): string {
@@ -85,7 +102,7 @@ export function renderLoadingCard(parent: HTMLElement, id: string, name: string,
   card.className = "server-card loading";
   card.dataset.serverId = id;
   card.innerHTML = `
-    <span class="server-icon placeholder" aria-hidden="true"></span>
+    <img class="server-icon" src="${GRASS_ICON_URL}" alt="${escapeHtml(name)} 默认图标" loading="lazy" />
     <div class="card-body">
       <header class="card-head">
         <div class="title-wrap">
@@ -108,11 +125,7 @@ export function upsertServerCard(parent: HTMLElement, view: ServerViewModel): vo
   card.className = `server-card ${view.status}`;
   card.dataset.serverId = view.id;
   card.innerHTML = `
-    ${
-      view.iconDataUrl
-        ? `<img class="server-icon" src="${escapeHtml(view.iconDataUrl)}" alt="${escapeHtml(view.name)} 图标" loading="lazy" />`
-        : '<span class="server-icon placeholder" aria-hidden="true"></span>'
-    }
+    ${serverIconMarkup(view)}
     <div class="card-body">
       <header class="card-head">
         <div class="title-wrap">
