@@ -36,17 +36,12 @@
     ]
   },
   {
-    "name": "DUT_Craft 愚人节",
-    "address": [
-      {
-        "host": "mchk.unsafe.top",
-        "port": 25567
-      }
-    ]
-  },
-  {
     "name": "DUT_Craft 整合猫",
     "address": [
+      {
+        "host": "hz.utf-8.fun",
+        "port": 25563
+      },
       {
         "host": "mchk.unsafe.top",
         "port": 25563
